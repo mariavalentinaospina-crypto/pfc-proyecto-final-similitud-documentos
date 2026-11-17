@@ -29,5 +29,26 @@ class SimilitudTestPropios extends AnyFunSuite {
     assert(normalizar("a b\tc\nd") == Vector("a", "b", "c", "d"))
   }
 
+  test("fragmentos propio: k igual al largo da un solo fragmento"){
+    assert(fragmentos(Vector("a", "b", "c"), 3) == Vector(Vector("a", "b", "c")))
+  }
+
+  test("fragmentos propio: t < k devuelve vacío"){
+    assert(fragmentos(Vector("a", "b"), 5).isEmpty)
+  }
+
+  test("fragmentos propio: k = 1 devuelve cada palabra"){
+    assert(fragmentos(Vector("x", "y", "z"), 1) ==
+      Vector(Vector("x"), Vector("y"), Vector("z")))
+  }
+
+  test("fragmentos propio: vector vacío"){
+    assert(fragmentos(Vector.empty, 2). isEmpty)
+  }
+
+  test("fragmentos propio: cantidad t - k + 1"){
+    assert(fragmentos(Vector("a", "b", "c", "e"), 3).length == 3)
+  }
+
 
 }
