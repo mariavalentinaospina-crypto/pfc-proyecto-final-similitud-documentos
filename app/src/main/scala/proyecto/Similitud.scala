@@ -124,20 +124,40 @@ object Similitud {
    * Las parejas que comparten al menos un fragmento, sin repetir y ordenadas.
    * Una misma pareja puede salir de varias entradas del índice.
    */
-  def parejasCandidatas(idx: Indice): Vector[Pareja] = ???
+  def parejasCandidatas(idx: Indice): Vector[Pareja] = {
+    def combinaciones(docs: Set[Int]): Vector[Pareja] = {
+      val ord = docs.toVector.sorted
+      for {
+        a <- ord.indices.toVector
+        b <- ((a + 1) until ord.length).toVector
+      } yield (ord(a), ord(b))
+    }
+    idx.values.flatMap(combinaciones).toVector.distinct.sorted
+  }
 
   /**
    * Las mediciones que alcanzan el umbral, de mayor a menor similitud y
    * truncadas a p. Los empates se rompen por posición, de modo que el
    * resultado no dependa del orden en que llegaron las mediciones.
    */
-  def ranking(ss: Vector[Medicion], umbral: Double, p: Int): Vector[Medicion] = ???
+  def ranking(ss: Vector[Medicion], umbral: Double, p: Int): Vector[Medicion] =
+    ss.filter(_._3 >= umbral)
+      .sortBy(m => (-m._3, m._1, m._2))
+      .take(p)
 
   /** Solución directa: compara las n (n - 1) / 2 parejas. */
   def detectarDirecto(c: Corpus, k: Int, umbral: Double,
-                      p: Int): Vector[Medicion] = ???
+                      p: Int): Vector[Medicion] = {
+    val hs = huellas(c, k)
+    ranking(similitudes(hs, parejas(c.length)), umbral, p)
+  }
 
   /** Solución con índice: compara solo las parejas candidatas. */
   def detectarConIndice(c: Corpus, k: Int, umbral: Double,
-                        p: Int): Vector[Medicion] = ???
+                        p: Int): Vector[Medicion] = {
+    val hs = huellas(c, k)
+    val idx = indiceInvertido(hs)
+    val candidatas = parejasCandidatas(idx)
+    ranking(similitudes(hs, candidatas), umbral, p)
+  }
 }
